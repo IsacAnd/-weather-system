@@ -1,0 +1,87 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: desafio-gdash-rabbitmq
+    env_file:
+      - .env
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  mongo:
+    image: mongo:6
+    container_name: desafio-gdash-mongo
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "${MONGO_PORT}:27017"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+    container_name: desafio-gdash-frontend
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT}:80"
+    env_file:
+      - .env
+    networks:
+      - default
+
+  backend:
+    build:
+      context: ./backend
+    container_name: desafio-gdash-backend
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "${BACKEND_PORT}:3000"
+    restart: always
+
+  producer:
+    build: ./producer
+    container_name: desafio-gdash-producer
+    depends_on:
+      - rabbitmq
+    env_file:
+      - .env
+    restart: always
+
+  worker:
+    build: ./worker
+    container_name: desafio-gdash-worker
+    depends_on:
+      - rabbitmq
+      - backend
+    env_file:
+      - .env
+    restart: always
+
+volumes:
+  rabbitmq-data:
+  mongo-data:
+
+
+networks:
+  default:
+    name: desafio-gdash-net
