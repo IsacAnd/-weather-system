@@ -154,6 +154,23 @@ DS_API_URL=https://openrouter.ai/api/v1/chat/completions
 
 ---
 
+---
+
+## ⚠️ IMPORTANTE — Criar o arquivo `.env`
+
+Este projeto **não versiona o arquivo `.env` por segurança**.  
+Após clonar o repositório, você **DEVE criar o seu próprio `.env` local** antes de subir os containers.
+
+### ✅ Passo a passo:
+
+No **Windows (PowerShell)**:
+
+```powershell
+copy .env.example .env
+```
+
+---
+
 ## 🤖 Criar Conta no OpenRouter (OBRIGATÓRIO para a IA funcionar)
 
 Para usar a IA DeepSeek gratuitamente:
